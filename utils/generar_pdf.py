@@ -15,14 +15,24 @@ def generar_pdf(datos, nombre_archivo, codigo):
 
     # Encabezados de la tabla
     pdf.set_font("Arial", "B", 10)  # fuente más pequeña
-    pdf.set_fill_color(0, 153, 0)  # verde SMV
-    pdf.set_text_color(255, 255, 255)  # texto blanco
-    columnas = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-    anchos = [60, 40, 40, 60, 30, 40]
+    pdf.set_fill_color(200, 255, 200)  # Verde claro
+    pdf.set_text_color(0, 0, 0)  # Negro
     
-    for i, col in enumerate(columnas):
-        pdf.cell(anchos[i], 8, col, border=0.5, align="C", fill=True)  # línea delgada + fondo verde
-    pdf.ln()
+    columnas = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
+    anchos = [60, 60, 40, 60, 30, 40]
+    
+    x_start = pdf.get_x()
+    y_start = pdf.get_y()
+    max_header_height = 0
+
+# Calcular altura máxima del encabezado
+for i, col in enumerate(columnas):
+    pdf.set_xy(x_start + sum(anchos[:i]), y_start)
+    pdf.multi_cell(anchos[i], 4, col, border=0.5, align="C", fill=True)
+    max_header_height = max(max_header_height, pdf.get_y() - y_start)
+
+# Ajustar posición después del encabezado
+pdf.set_y(y_start + max_header_height)
 
     # Cuerpo de la tabla
 pdf.set_font("Arial", "", 7)
