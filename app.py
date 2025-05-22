@@ -80,4 +80,3 @@ if uploaded_file:
             file_name="PDFs_empresas.zip",
             mime="application/zip"
         )
-
