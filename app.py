@@ -3,7 +3,7 @@ import pandas as pd
 import tempfile
 import os
 from zipfile import ZipFile
-from utils.generar_pdf import generar_pdf_por_codigo
+from utils.generar_pdf import generar_pdf
 st.set_page_config(page_title="Generador SMV", layout="centered")
 
 st.image("logo_smv.png", width=120)
