@@ -27,17 +27,18 @@ if uploaded_file:
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
 
             for (ncodigopj, empresa), grupo in grouped:
-                pdf = FPDF()
+                pdf = FPDF(orientation='L')
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
 
                 # Título empresa
                 pdf.set_font("Arial", 'B', 16)
+                pdf.set_text_color(0, 255, 255)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
 
                 # Encabezado tabla
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-                col_widths = [50, 50, 50, 60, 35, 35]
+                col_widths = [50, 35, 50, 60, 35, 35]
 
                 pdf.set_fill_color(0, 100, 0)  # Verde oscuro
                 pdf.set_text_color(0, 0, 0)
@@ -48,7 +49,7 @@ if uploaded_file:
                 pdf.ln()
 
                 # Filas con datos
-                pdf.set_font("Arial", '', 9)
+                pdf.set_font("Arial", '', 8)
                 for _, row in grupo.iterrows():
                     values = [
                         str(row["APELLIDOS Y NOMBRES"]),
@@ -68,7 +69,7 @@ if uploaded_file:
 
                 # Añadir PDF al ZIP
                 safe_empresa = empresa.replace(" ", "_").replace("/", "-")
-                filename = f"{safe_empresa}_{ncodigopj}.pdf"
+                filename = f"{ncodigopj}.pdf"
                 zip_file.writestr(filename, pdf_bytes.read())
 
         zip_buffer.seek(0)
