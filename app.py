@@ -1,76 +1,83 @@
 import streamlit as st
 import pandas as pd
-import os
-import tempfile
-import shutil
+from fpdf import FPDF
+from io import BytesIO
 import zipfile
-from utils.generar_pdf import generar_pdf_por_codigo
 
-st.set_page_config(page_title="Generador de PDFs SMV", layout="wide")
+st.set_page_config(page_title="Generador de PDFs en ZIP por Empresa", layout="centered")
 
-# Estilo personalizado con firma sutil y colores
-st.markdown("""
-    <style>
-        .main {
-            background-color: #f4fcf7;
-        }
-        footer::after {
-            content: "Hecho por Juan S.";
-            font-size: 10px;
-            color: #ccc;
-            display: block;
-            text-align: right;
-            margin: 10px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+st.title("📄 Generador de PDFs agrupados por NCODIGOPJ y descargables en ZIP")
 
-st.title("📄 Generador de Certificados PDF por Empresa")
-st.markdown("Sube un archivo Excel con datos y genera PDFs por cada empresa (`NCODIGOPJ`).")
-
-uploaded_file = st.file_uploader("📤 Sube tu archivo Excel", type=["xlsx", "xls"])
+uploaded_file = st.file_uploader("Sube el archivo Excel", type=["xlsx"])
 
 if uploaded_file:
-    try:
-        df = pd.read_excel(uploaded_file)
+    df = pd.read_excel(uploaded_file)
+    df.columns = df.columns.str.strip()
 
-        # ✅ LIMPIEZA DE DATOS PARA EVITAR ERRORES
-        df.columns = df.columns.str.strip()  # Quita espacios de los nombres de columnas
-        df["NCODIGOPJ"] = df["NCODIGOPJ"].astype(str).str.strip()
-        df["EMPRESA"] = df["EMPRESA"].astype(str).str.strip()
-        df = df.dropna(subset=["NCODIGOPJ", "EMPRESA"])  # Elimina filas sin código ni empresa
+    if "NCODIGOPJ" not in df.columns:
+        st.error("El archivo no contiene la columna 'NCODIGOPJ'")
+    else:
+        grouped = df.groupby(['NCODIGOPJ', 'EMPRESA'])
 
+        n_codigos = len(grouped)
+        st.info(f"Se generarán PDFs para **{n_codigos}** códigos únicos NCODIGOPJ.")
 
-        if "NCODIGOPJ" not in df.columns:
-            st.error("❌ El archivo debe contener la columna 'NCODIGOPJ'")
-        else:
-            codigos = df["NCODIGOPJ"].dropna().astype(str).unique()
-            st.success(f"✅ Se encontraron {len(codigos)} códigos únicos.")
+        # Crear ZIP en memoria
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
 
-            if st.button("📥 Generar PDFs"):
-                with st.spinner("Generando PDFs..."):
+            for (ncodigopj, empresa), grupo in grouped:
+                pdf = FPDF()
+                pdf.set_auto_page_break(auto=True, margin=15)
+                pdf.add_page()
 
-                    temp_dir = tempfile.mkdtemp()
-                    pdf_paths = []
+                # Título empresa
+                pdf.set_font("Arial", 'B', 16)
+                pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
 
-                    for codigo in codigos:
-                        datos_filtrados = df[df["NCODIGOPJ"] == codigo]
-                    
-                        if not datos_filtrados.empty:
-                            pdf_path = generar_pdf_por_codigo(codigo, datos_filtrados, temp_dir)
-                            pdf_paths.append(pdf_path)
-                        else:
-                            st.warning(f"⚠️ No se encontraron datos para el código {codigo}. Se omitió.")
+                # Encabezado tabla
+                headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
+                col_widths = [50, 50, 50, 60, 35, 35]
 
-                    # Crear ZIP
-                    zip_path = os.path.join(temp_dir, "certificados.zip")
-                    with zipfile.ZipFile(zip_path, "w") as zipf:
-                        for path in pdf_paths:
-                            zipf.write(path, os.path.basename(path))
+                pdf.set_fill_color(0, 100, 0)  # Verde oscuro
+                pdf.set_text_color(0, 0, 0)
+                pdf.set_font("Arial", 'B', 10)
 
-                    with open(zip_path, "rb") as f:
-                        st.download_button("📦 Descargar ZIP con todos los PDFs", f, file_name="certificados.zip")
+                for i, header in enumerate(headers):
+                    pdf.cell(col_widths[i], 10, header, border=1, ln=0, align='C', fill=True)
+                pdf.ln()
 
-    except Exception as e:
-        st.error(f"❌ Error al procesar el archivo: {e}")
+                # Filas con datos
+                pdf.set_font("Arial", '', 9)
+                for _, row in grupo.iterrows():
+                    values = [
+                        str(row["APELLIDOS Y NOMBRES"]),
+                        str(row["EMAIL"]),
+                        str(row["PERFIL"]),
+                        str(row["CARGOS"]).replace("<BR>", " / "),
+                        str(row["FECHA INICIAL"]),
+                        str(row.get("FECHA VENC CERTIFICADO", ""))
+                    ]
+                    for i, value in enumerate(values):
+                        pdf.cell(col_widths[i], 10, value[:40], border=1, ln=0)
+                    pdf.ln()
+
+                # Guardar PDF en bytes
+                pdf_bytes = BytesIO()
+                pdf.output(pdf_bytes)
+                pdf_bytes.seek(0)
+
+                # Añadir PDF al ZIP
+                safe_empresa = empresa.replace(" ", "_").replace("/", "-")
+                filename = f"{safe_empresa}_{ncodigopj}.pdf"
+                zip_file.writestr(filename, pdf_bytes.read())
+
+        zip_buffer.seek(0)
+
+        st.download_button(
+            label="📥 Descargar ZIP con todos los PDFs",
+            data=zip_buffer,
+            file_name="PDFs_empresas.zip",
+            mime="application/zip"
+        )
 
