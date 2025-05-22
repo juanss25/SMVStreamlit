@@ -25,19 +25,35 @@ def generar_pdf(datos, nombre_archivo, codigo):
     pdf.ln()
 
     # Cuerpo de la tabla
-    pdf.set_font("Arial", "", 9)
-    for _, fila in datos.iterrows():
-        valores = [
-            str(fila["APELLIDOS Y NOMBRES"]),
-            str(fila["EMAIL"]),
-            str(fila["PERFIL"]),
-            str(fila["CARGOS"]).replace("<BR>", ", "),
-            str(fila["FECHA INICIAL"])[:10],
-            str(fila["FECHA VENC CERTIFICADO"])[:10],
-        ]
-        for i, val in enumerate(valores):
-            pdf.cell(anchos[i], 10, val, border=1)
-        pdf.ln()
+pdf.set_font("Arial", "", 7)
+
+for _, fila in datos.iterrows():
+    valores = [
+        str(fila["APELLIDOS Y NOMBRES"]),
+        str(fila["EMAIL"]),
+        str(fila["PERFIL"]),
+        str(fila["CARGOS"]).replace("<BR>", ", "),
+        str(fila["FECHA INICIAL"])[:10],
+        str(fila["FECHA VENC CERTIFICADO"])[:10],
+    ]
+
+    # Calcular la altura máxima necesaria por fila
+    line_heights = []
+    for i, val in enumerate(valores):
+        # MultiCell nos da control para obtener altura requerida
+        pdf.set_xy(pdf.get_x(), pdf.get_y())
+        line_heights.append(pdf.get_string_width(val) / (anchos[i] - 1) * 2.5)
+
+    max_height = max(line_heights)
+
+    x_start = pdf.get_x()
+    y_start = pdf.get_y()
+
+    for i, val in enumerate(valores):
+        pdf.set_xy(x_start + sum(anchos[:i]), y_start)
+        pdf.multi_cell(anchos[i], 4, val, border=0.5, align="J")
+
+    pdf.set_y(y_start + max_height + 2)
 
     # Guardar PDF
     pdf.output(nombre_archivo)
