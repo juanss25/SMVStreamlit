@@ -5,31 +5,67 @@ from io import BytesIO
 import zipfile
 import os
 
-st.set_page_config(page_title="Generador de PDFs", layout="centered")
-st.title("📄 Generador de PDFs agrupados por NCODIGOPJ")
+st.set_page_config(page_title="Generador de PDFs en ZIP por Empresa", layout="centered")
+st.title("📄 Generador de PDFs agrupados por NCODIGOPJ y descargables en ZIP")
 
 uploaded_file = st.file_uploader("Sube el archivo Excel", type=["xlsx"])
 
-def add_fixed_row(pdf, col_widths, data, is_header=False, height=10):
+def print_row_fixed_height(pdf, col_widths, data, line_height=5, max_lines=2):
+    row_height = line_height * max_lines
     x_start = pdf.get_x()
     y_start = pdf.get_y()
 
-    if is_header:
-        pdf.set_fill_color(0, 100, 0)
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", 'B', 10)
-    else:
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", '', 9)
-
     for i, text in enumerate(data):
-        cell_text = str(text)
-        if len(cell_text) > 100:
-            cell_text = cell_text[:97] + "..."
-        pdf.multi_cell(col_widths[i], height / 2, cell_text, border=1, align='L')
-        pdf.set_xy(x_start + sum(col_widths[:i+1]), y_start)
+        x = pdf.get_x()
+        y = pdf.get_y()
 
-    pdf.set_xy(x_start, y_start + height)
+        # Ajustar texto a máximo de caracteres por línea
+        max_chars_per_line = int(col_widths[i] / 2.7)
+        words = text.split()
+        lines = []
+        line = ""
+
+        for word in words:
+            if len(line + " " + word) <= max_chars_per_line:
+                line += " " + word if line else word
+            else:
+                lines.append(line)
+                line = word
+        lines.append(line)
+
+        # Recortar o completar líneas
+        if len(lines) > max_lines:
+            lines = lines[:max_lines]
+        else:
+            while len(lines) < max_lines:
+                lines.append("")
+
+        # Dibujar celda con 2 líneas
+        for ln in lines:
+            pdf.cell(col_widths[i], line_height, ln, border=0)
+        # Redibujar borde externo
+        pdf.rect(x, y, col_widths[i], row_height)
+        pdf.set_xy(x + col_widths[i], y)
+
+    pdf.set_xy(x_start, y_start + row_height)
+
+def draw_header_fixed(pdf, col_widths, headers, line_height=5, max_lines=2):
+    row_height = line_height * max_lines
+    x_start = pdf.get_x()
+    y_start = pdf.get_y()
+
+    pdf.set_fill_color(0, 100, 0)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", 'B', 10)
+
+    for i, header in enumerate(headers):
+        x = pdf.get_x()
+        y = pdf.get_y()
+        pdf.multi_cell(col_widths[i], line_height, header, border=0, align='C')
+        pdf.rect(x, y, col_widths[i], row_height)
+        pdf.set_xy(x + col_widths[i], y)
+    
+    pdf.set_xy(x_start, y_start + row_height)
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
@@ -40,7 +76,7 @@ if uploaded_file:
     else:
         grouped = df.groupby(['NCODIGOPJ', 'EMPRESA'])
         n_codigos = len(grouped)
-        st.success(f"Se generarán PDFs para **{n_codigos}** códigos únicos.")
+        st.info(f"Se generarán PDFs para **{n_codigos}** códigos únicos NCODIGOPJ.")
 
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
@@ -50,21 +86,22 @@ if uploaded_file:
                 pdf.add_page()
 
 
-                # Título centrado
+                # Título
+                pdf.set_xy(50, 10)
+                pdf.set_text_color(95, 158, 160)
                 pdf.set_font("Arial", 'B', 16)
-                pdf.ln(5)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
-                pdf.ln(5)
 
-                headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-                col_widths = [60, 60, 50, 70, 35, 40]
+                pdf.ln(15)
 
-                # Encabezado
-                add_fixed_row(pdf, col_widths, headers, is_header=True, height=10)
+                headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"]
+                col_widths = [50, 40, 50, 70, 35, 40]
 
-                # Filas
+                draw_header_fixed(pdf, col_widths, headers, line_height=5, max_lines=2)
+                pdf.set_font("Arial", '', 8)
+
                 for _, row in grupo.iterrows():
-                    data = [
+                    values = [
                         str(row["APELLIDOS Y NOMBRES"]),
                         str(row["EMAIL"]),
                         str(row["PERFIL"]),
@@ -72,14 +109,12 @@ if uploaded_file:
                         str(row["FECHA INICIAL"]),
                         str(row.get("FECHA VENC CERTIFICADO", ""))
                     ]
-                    add_fixed_row(pdf, col_widths, data, is_header=False, height=10)
+                    print_row_fixed_height(pdf, col_widths, values, line_height=5, max_lines=2)
 
-                # Guardar PDF en memoria
                 pdf_bytes = BytesIO(pdf.output(dest='S').encode('latin1'))
                 filename = f"{ncodigopj}.pdf"
                 zip_file.writestr(filename, pdf_bytes.read())
 
-        # Descargar ZIP
         zip_buffer.seek(0)
         st.download_button(
             label="📥 Descargar ZIP con todos los PDFs",
@@ -87,3 +122,4 @@ if uploaded_file:
             file_name="PDFs_empresas.zip",
             mime="application/zip"
         )
+
