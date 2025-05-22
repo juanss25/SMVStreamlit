@@ -74,9 +74,6 @@ if uploaded_file:
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
 
-                # Agregar logo si existe
-                if os.path.exists("logo_smv.png"):
-                    pdf.image("logo_smv.png", x=10, y=8, w=30)
 
                 # Título
                 pdf.set_font("Arial", 'B', 16)
