@@ -6,14 +6,11 @@ class PDF(FPDF):
         pass  # puedes agregar un encabezado si quieres
 
 def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
-    pdf = FPDF(orientation='L', unit='mm', format='A4')
+    pdf = PDF()
     pdf.add_page()
-    pdf.set_font("Arial", "B", 14)
 
-    # Título con el nombre de la empresa
+    # Título
     empresa = df_filtrado["EMPRESA"].iloc[0]
-
-    
     pdf.set_font("Arial", "B", 12)
     pdf.set_text_color(0, 102, 204)
     pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
