@@ -33,19 +33,19 @@ if uploaded_file:
 
                 # Título empresa
                 pdf.set_font("Arial", 'B', 16)
-                pdf.set_text_color(0, 255, 255)
+                pdf.set_text_color(70, 130, 180)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
 
                 # Encabezado tabla
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-                col_widths = [50, 35, 50, 60, 35, 35]
+                col_widths = [50, 40, 50, 60, 35, 35]
 
                 pdf.set_fill_color(0, 100, 0)  # Verde oscuro
                 pdf.set_text_color(0, 0, 0)
-                pdf.set_font("Arial", 'B', 10)
+                pdf.set_font("Arial", 'B', 8)
 
                 for i, header in enumerate(headers):
-                    pdf.cell(col_widths[i], 10, header, border=1, ln=0, align='C', fill=True)
+                    pdf.cell(col_widths[i], 7, header, border=1, ln=0, align='C', fill=True)
                 pdf.ln()
 
                 # Filas con datos
@@ -60,7 +60,7 @@ if uploaded_file:
                         str(row.get("FECHA VENC CERTIFICADO", ""))
                     ]
                     for i, value in enumerate(values):
-                        pdf.cell(col_widths[i], 10, value[:40], border=1, ln=0)
+                        pdf.cell(col_widths[i], 7, value[:40], border=1, ln=0)
                     pdf.ln()
 
                 # Guardar PDF en bytes
