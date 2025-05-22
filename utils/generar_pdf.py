@@ -47,14 +47,14 @@ def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
     pdf.set_text_color(0, 0, 0)
 
     for _, fila in df_filtrado.iterrows():
-    valores = [
-        seguro(fila.get("APELLIDOS Y NOMBRES")),
-        seguro(fila.get("EMAIL")),
-        seguro(fila.get("PERFIL")),
-        seguro(fila.get("CARGOS")).replace("<BR>", ", "),
-        seguro(fila.get("FECHA INICIAL"))[:10],
-        seguro(fila.get("FECHA VENC CERTIFICADO"))[:10],
-    ]
+        valores = [
+            seguro(fila.get("APELLIDOS Y NOMBRES")),
+            seguro(fila.get("EMAIL")),
+            seguro(fila.get("PERFIL")),
+            seguro(fila.get("CARGOS")).replace("<BR>", ", "),
+            seguro(fila.get("FECHA INICIAL"))[:10],
+            seguro(fila.get("FECHA VENC CERTIFICADO"))[:10],
+        ]
 
         line_heights = []
         for i, val in enumerate(valores):
