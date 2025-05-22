@@ -26,7 +26,7 @@ def add_fixed_row(pdf, col_widths, data, is_header=False, height=10):
         cell_text = str(text)
         if len(cell_text) > 100:
             cell_text = cell_text[:97] + "..."
-        pdf.multi_cell(col_widths[i], height / 2, cell_text, border=1, align='L', max_line_height=height / 2)
+        pdf.multi_cell(col_widths[i], height / 2, cell_text, border=1, align='L')
         pdf.set_xy(x_start + sum(col_widths[:i+1]), y_start)
 
     pdf.set_xy(x_start, y_start + height)
@@ -49,22 +49,23 @@ if uploaded_file:
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
 
-                # Logo
+                # Logo si existe
                 if os.path.exists("logo_smv.png"):
                     pdf.image("logo_smv.png", x=10, y=8, w=30)
 
-                # Título
+                # Título centrado
                 pdf.set_font("Arial", 'B', 16)
                 pdf.ln(5)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
                 pdf.ln(5)
 
-                # Encabezado y columnas
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-                col_widths = [50, 40, 50, 70, 35, 40]
+                col_widths = [60, 60, 50, 70, 35, 40]
+
+                # Encabezado
                 add_fixed_row(pdf, col_widths, headers, is_header=True, height=10)
 
-                # Datos
+                # Filas
                 for _, row in grupo.iterrows():
                     data = [
                         str(row["APELLIDOS Y NOMBRES"]),
@@ -76,10 +77,12 @@ if uploaded_file:
                     ]
                     add_fixed_row(pdf, col_widths, data, is_header=False, height=10)
 
+                # Guardar PDF en memoria
                 pdf_bytes = BytesIO(pdf.output(dest='S').encode('latin1'))
                 filename = f"{ncodigopj}.pdf"
                 zip_file.writestr(filename, pdf_bytes.read())
 
+        # Descargar ZIP
         zip_buffer.seek(0)
         st.download_button(
             label="📥 Descargar ZIP con todos los PDFs",
