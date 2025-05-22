@@ -5,7 +5,7 @@ class PDF(FPDF):
     def header(self):
         pass  # puedes agregar un encabezado si quieres
 
-def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
+def generar_pdf(codigo, df_filtrado, output_dir):
     pdf = PDF()
     pdf.add_page()
 
