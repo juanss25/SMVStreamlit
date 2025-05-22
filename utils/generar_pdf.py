@@ -17,7 +17,7 @@ def generar_pdf(datos, nombre_archivo, codigo):
     anchos = [60, 40, 40, 60, 30, 40]
     
     for i, col in enumerate(columnas):
-        pdf.cell(anchos[i], 8, col, border=0.5, align="C", fill=True)  # línea delgada + fondo verde
+    pdf.cell(anchos[i], 10, col, border=1, align="C")
     pdf.ln()
 
     # Cuerpo de la tabla
