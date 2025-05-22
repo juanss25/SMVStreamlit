@@ -1,9 +1,6 @@
 from fpdf import FPDF
 
 def generar_pdf(datos, nombre_archivo, codigo):
-    from fpdf import FPDF
-
-def generar_pdf(datos, nombre_archivo, codigo):
     pdf = FPDF(orientation='L', unit='mm', format='A4')
     pdf.add_page()
     pdf.set_font("Arial", "B", 12)
