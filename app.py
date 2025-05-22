@@ -63,9 +63,8 @@ if uploaded_file:
                     pdf.ln()
 
                 # Guardar PDF en bytes
-                pdf_bytes = BytesIO()
-                pdf.output(pdf_bytes)
-                pdf_bytes.seek(0)
+                pdf_str = pdf.output(dest='S').encode('latin1')
+                pdf_bytes = BytesIO(pdf_str)
 
                 # Añadir PDF al ZIP
                 safe_empresa = empresa.replace(" ", "_").replace("/", "-")
