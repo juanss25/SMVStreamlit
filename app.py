@@ -7,8 +7,10 @@ from utils.generar_pdf import generar_pdf
 
 st.set_page_config(page_title="Generador SMV", layout="centered")
 
-st.title("📄 Generador de Certificados PDF - SMV")
-st.caption("by Juan S. (uso interno)")
+st.image("logo_smv.png", width=120)
+st.markdown("## Generador de Certificados por NCODIGOPJ")
+st.markdown('<p style="color:gray; font-size:10px;">Hecho por Juan S.</p>', unsafe_allow_html=True)
+
 
 uploaded_file = st.file_uploader("Sube el archivo Excel", type=["xlsx"])
 
