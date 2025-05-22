@@ -48,12 +48,12 @@ def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
 
     for _, fila in df_filtrado.iterrows():
         valores = [
-            seguro(fila.get("APELLIDOS Y NOMBRES")),
-            seguro(fila.get("EMAIL")),
-            seguro(fila.get("PERFIL")),
-            seguro(fila.get("CARGOS")).replace("<BR>", ", "),
-            seguro(fila.get("FECHA INICIAL"))[:10],
-            seguro(fila.get("FECHA VENC CERTIFICADO"))[:10],
+            str(fila.get("APELLIDOS Y NOMBRES", "") or ""),
+            str(fila.get("EMAIL", "") or ""),
+            str(fila.get("PERFIL", "") or ""),
+            str(fila.get("CARGOS", "") or "").replace("<BR>", ", "),
+            str(fila.get("FECHA INICIAL", "") or "")[:10],
+            str(fila.get("FECHA VENC CERTIFICADO", "") or "")[:10],
         ]
 
         line_heights = []
