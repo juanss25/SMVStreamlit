@@ -48,8 +48,12 @@ if uploaded_file:
 
                     for codigo in codigos:
                         datos_filtrados = df[df["NCODIGOPJ"] == codigo]
-                        pdf_path = generar_pdf_por_codigo(codigo, datos_filtrados, temp_dir)
-                        pdf_paths.append(pdf_path)
+                    
+                        if not datos_filtrados.empty:
+                            pdf_path = generar_pdf_por_codigo(codigo, datos_filtrados, temp_dir)
+                            pdf_paths.append(pdf_path)
+                        else:
+                            st.warning(f"⚠️ No se encontraron datos para el código {codigo}. Se omitió.")
 
                     # Crear ZIP
                     zip_path = os.path.join(temp_dir, "certificados.zip")
