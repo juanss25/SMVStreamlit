@@ -64,6 +64,8 @@ def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
             line_heights.append(num_lineas * 4.5)
 
         max_height = max(line_heights)
+        if pdf.get_y() + max(line_heights) > 280:
+            pdf.add_page()
         x = pdf.get_x()
         y = pdf.get_y()
 
