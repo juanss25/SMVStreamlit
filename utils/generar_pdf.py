@@ -6,7 +6,7 @@ def generar_pdf(datos, nombre_archivo, codigo):
 def generar_pdf(datos, nombre_archivo, codigo):
     pdf = FPDF(orientation='L', unit='mm', format='A4')
     pdf.add_page()
-    pdf.set_font("Arial", "B", 14)
+    pdf.set_font("Arial", "B", 12)
 
     # Título con el nombre de la empresa
     empresa = datos["EMPRESA"].iloc[0]
@@ -14,13 +14,14 @@ def generar_pdf(datos, nombre_archivo, codigo):
     pdf.cell(0, 10, f"EMPRESA: {empresa}", ln=True, align="C")
 
     # Encabezados de la tabla
-    pdf.set_font("Arial", "B", 10)
-    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", "B", 10)  # fuente más pequeña
+    pdf.set_fill_color(0, 153, 0)  # verde SMV
+    pdf.set_text_color(255, 255, 255)  # texto blanco
     columnas = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-    anchos = [60, 60, 40, 60, 30, 40]
-
+    anchos = [60, 40, 40, 60, 30, 40]
+    
     for i, col in enumerate(columnas):
-        pdf.cell(anchos[i], 10, col, border=1, align="C")
+        pdf.cell(anchos[i], 8, col, border=0.5, align="C", fill=True)  # línea delgada + fondo verde
     pdf.ln()
 
     # Cuerpo de la tabla
