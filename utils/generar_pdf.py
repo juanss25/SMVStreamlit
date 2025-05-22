@@ -4,7 +4,9 @@ import os
 class PDF(FPDF):
     def header(self):
         pass  # puedes agregar un encabezado si quieres
-
+def seguro(valor):
+    return str(valor) if pd.notnull(valor) else ""
+    
 def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
     pdf = PDF()
     pdf.add_page()
@@ -45,14 +47,14 @@ def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
     pdf.set_text_color(0, 0, 0)
 
     for _, fila in df_filtrado.iterrows():
-        valores = [
-            str(fila.get("APELLIDOS Y NOMBRES", "") or ""),
-            str(fila.get("EMAIL", "") or ""),
-            str(fila.get("PERFIL", "") or ""),
-            str(fila.get("CARGOS", "") or "").replace("<BR>", ", "),
-            str(fila.get("FECHA INICIAL", "") or "")[:10],
-            str(fila.get("FECHA VENC CERTIFICADO", "") or "")[:10],
-        ]
+    valores = [
+        seguro(fila.get("APELLIDOS Y NOMBRES")),
+        seguro(fila.get("EMAIL")),
+        seguro(fila.get("PERFIL")),
+        seguro(fila.get("CARGOS")).replace("<BR>", ", "),
+        seguro(fila.get("FECHA INICIAL"))[:10],
+        seguro(fila.get("FECHA VENC CERTIFICADO"))[:10],
+    ]
 
         line_heights = []
         for i, val in enumerate(valores):
