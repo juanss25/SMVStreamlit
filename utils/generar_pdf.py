@@ -1,67 +1,80 @@
 from fpdf import FPDF
+import os
 
-def generar_pdf(datos, nombre_archivo, codigo):
-    pdf = FPDF(orientation='L', unit='mm', format='A4')
+class PDF(FPDF):
+    def header(self):
+        pass  # puedes agregar un encabezado si quieres
+
+def generar_pdf_por_codigo(codigo, df_filtrado, output_dir):
+    pdf = PDF()
     pdf.add_page()
+
+    # Título
+    empresa = df_filtrado["EMPRESA"].iloc[0]
     pdf.set_font("Arial", "B", 12)
+    pdf.set_text_color(0, 102, 204)
+    pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
 
-    # Título con el nombre de la empresa
-    empresa = datos["EMPRESA"].iloc[0]
-    pdf.set_text_color(0, 70, 127)  # Azul SMV
-    pdf.cell(0, 10, f"EMPRESA: {empresa}", ln=True, align="C")
+    pdf.set_font("Arial", "", 8)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 5, f"NCODIGOPJ: {codigo}", ln=True, align="C")
+    pdf.ln(5)
 
-    # Encabezados de la tabla
-    pdf.set_font("Arial", "B", 10)  # fuente más pequeña
-    pdf.set_fill_color(200, 255, 200)  # Verde claro
-    pdf.set_text_color(0, 0, 0)  # Negro
-    
+    # --- Configuración de tabla ---
+    pdf.set_font("Arial", "B", 8)
+    pdf.set_fill_color(200, 255, 200)  # verde claro
+    pdf.set_text_color(0, 0, 0)
+
     columnas = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
     anchos = [60, 60, 40, 60, 30, 40]
-    
+
+    # Encabezados con multi_cell
     x_start = pdf.get_x()
     y_start = pdf.get_y()
     max_header_height = 0
 
-# Calcular altura máxima del encabezado
-for i, col in enumerate(columnas):
-    pdf.set_xy(x_start + sum(anchos[:i]), y_start)
-    pdf.multi_cell(anchos[i], 4, col, border=0.5, align="C", fill=True)
-    max_header_height = max(max_header_height, pdf.get_y() - y_start)
-
-# Ajustar posición después del encabezado
-pdf.set_y(y_start + max_header_height)
-
-    # Cuerpo de la tabla
-pdf.set_font("Arial", "", 7)
-
-for _, fila in datos.iterrows():
-    valores = [
-        str(fila["APELLIDOS Y NOMBRES"]),
-        str(fila["EMAIL"]),
-        str(fila["PERFIL"]),
-        str(fila["CARGOS"]).replace("<BR>", ", "),
-        str(fila["FECHA INICIAL"])[:10],
-        str(fila["FECHA VENC CERTIFICADO"])[:10],
-    ]
-
-    # Calcular la altura máxima necesaria por fila
-    line_heights = []
-    for i, val in enumerate(valores):
-        # MultiCell nos da control para obtener altura requerida
-        pdf.set_xy(pdf.get_x(), pdf.get_y())
-        line_heights.append(pdf.get_string_width(val) / (anchos[i] - 1) * 2.5)
-
-    max_height = max(line_heights)
-
-    x_start = pdf.get_x()
-    y_start = pdf.get_y()
-
-    for i, val in enumerate(valores):
+    for i, col in enumerate(columnas):
         pdf.set_xy(x_start + sum(anchos[:i]), y_start)
-        pdf.multi_cell(anchos[i], 4, val, border=0.5, align="J")
+        pdf.multi_cell(anchos[i], 5, col, border=0.5, align="C", fill=True)
+        max_header_height = max(max_header_height, pdf.get_y() - y_start)
 
-    pdf.set_y(y_start + max_height + 2)
+    pdf.set_y(y_start + max_header_height)
+
+    # --- Cuerpo ---
+    pdf.set_font("Arial", "", 7)
+    pdf.set_text_color(0, 0, 0)
+
+    for _, fila in df_filtrado.iterrows():
+        valores = [
+            str(fila["APELLIDOS Y NOMBRES"]),
+            str(fila["EMAIL"]),
+            str(fila["PERFIL"]),
+            str(fila["CARGOS"]).replace("<BR>", ", "),
+            str(fila["FECHA INICIAL"])[:10],
+            str(fila["FECHA VENC CERTIFICADO"])[:10],
+        ]
+
+        line_heights = []
+        for i, val in enumerate(valores):
+            texto = val.strip()
+            ancho = anchos[i]
+            num_lineas = max(1, len(pdf.multi_cell(ancho, 4.5, texto, border=0, align="J", split_only=True)))
+            line_heights.append(num_lineas * 4.5)
+
+        max_height = max(line_heights)
+        x = pdf.get_x()
+        y = pdf.get_y()
+
+        for i, val in enumerate(valores):
+            pdf.set_xy(x + sum(anchos[:i]), y)
+            pdf.multi_cell(anchos[i], 4.5, val.strip(), border=0.5, align="J")
+
+        pdf.set_y(y + max_height)
 
     # Guardar PDF
-    pdf.output(nombre_archivo)
+    nombre_pdf = f"{codigo}.pdf"
+    ruta_pdf = os.path.join(output_dir, nombre_pdf)
+    pdf.output(ruta_pdf)
+
+    return ruta_pdf
 
