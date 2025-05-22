@@ -37,7 +37,7 @@ if uploaded_file:
         if "NCODIGOPJ" not in df.columns:
             st.error("❌ El archivo debe contener la columna 'NCODIGOPJ'")
         else:
-            codigos = df["NCODIGOPJ"].unique()
+            codigos = df["NCODIGOPJ"].dropna().astype(str).unique()
             st.success(f"✅ Se encontraron {len(codigos)} códigos únicos.")
 
             if st.button("📥 Generar PDFs"):
