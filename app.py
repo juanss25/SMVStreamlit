@@ -85,10 +85,10 @@ if uploaded_file:
                 pdf.ln(10)
 
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-                col_widths = [60, 60, 50, 70, 35, 40]
+                col_widths = [50, 40, 50, 70, 35, 40]
 
                 draw_header(pdf, col_widths, headers, line_height=5)
-                pdf.set_font("Arial", '', 9)
+                pdf.set_font("Arial", '', 8)
 
                 for _, row in grupo.iterrows():
                     values = [
