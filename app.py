@@ -34,6 +34,13 @@ if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file)
 
+        # ✅ LIMPIEZA DE DATOS PARA EVITAR ERRORES
+        df.columns = df.columns.str.strip()  # Quita espacios de los nombres de columnas
+        df["NCODIGOPJ"] = df["NCODIGOPJ"].astype(str).str.strip()
+        df["EMPRESA"] = df["EMPRESA"].astype(str).str.strip()
+        df = df.dropna(subset=["NCODIGOPJ", "EMPRESA"])  # Elimina filas sin código ni empresa
+
+
         if "NCODIGOPJ" not in df.columns:
             st.error("❌ El archivo debe contener la columna 'NCODIGOPJ'")
         else:
