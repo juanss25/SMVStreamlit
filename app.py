@@ -9,6 +9,7 @@ st.set_page_config(page_title="Generador de PDFs en ZIP por Empresa", layout="ce
 st.title("📄 Generador de PDFs agrupados por NCODIGOPJ y descargables en ZIP")
 
 uploaded_file = st.file_uploader("Sube el archivo Excel", type=["xlsx"])
+
 def calculate_row_height(pdf, col_widths, data, line_height=5):
     max_lines = 0
     pdf.set_font("Arial", '', 9)
@@ -28,6 +29,7 @@ def calculate_row_height(pdf, col_widths, data, line_height=5):
         max_lines = max(max_lines, len(lines))
 
     return max_lines * line_height
+
 def draw_row(pdf, col_widths, data, line_height=5):
     x_start = pdf.get_x()
     y_start = pdf.get_y()
@@ -37,7 +39,6 @@ def draw_row(pdf, col_widths, data, line_height=5):
 
     pdf.set_font("Arial", '', 9)
 
-    # 1. Calcular cuántas líneas necesita cada celda
     for i, text in enumerate(data):
         max_chars = int(col_widths[i] / 2.5)
         words = text.split()
@@ -55,27 +56,23 @@ def draw_row(pdf, col_widths, data, line_height=5):
         max_lines = max(max_lines, len(lines))
 
     row_height = max_lines * line_height
+
     if pdf.get_y() + row_height > pdf.page_break_trigger:
         pdf.add_page()
         draw_header(pdf, col_widths, ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"], line_height)
 
-    # 2. Dibujar cada celda y su contenido
     for i, lines in enumerate(text_lines):
         x = pdf.get_x()
         y = pdf.get_y()
         cell_width = col_widths[i]
-
-        # Dibujar bordes
         pdf.rect(x, y, cell_width, row_height)
 
-        # Dibujar texto línea por línea
         for idx, line in enumerate(lines):
             pdf.set_xy(x, y + idx * line_height)
             pdf.cell(cell_width, line_height, line, ln=0)
 
         pdf.set_xy(x + cell_width, y)
 
-    # 3. Bajar a siguiente fila
     pdf.set_xy(x_start, y_start + row_height)
 
 def draw_header(pdf, col_widths, headers, line_height=5):
@@ -83,14 +80,13 @@ def draw_header(pdf, col_widths, headers, line_height=5):
     y_start = pdf.get_y()
     row_height = 2 * line_height
 
-    
     pdf.set_text_color(0, 0, 0)
     pdf.set_font("Arial", 'B', 10)
     pdf.set_fill_color(46, 139, 87)
     for i, header in enumerate(headers):
         x = pdf.get_x()
         y = pdf.get_y()
-        pdf.rect(x, y, col_widths[i], row_height)
+        pdf.rect(x, y, col_widths[i], row_height, style='F')
         pdf.multi_cell(col_widths[i], line_height, header, border=0, align='C')
         pdf.set_xy(x + col_widths[i], y)
 
@@ -114,13 +110,10 @@ if uploaded_file:
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
 
-
-                # Título
                 pdf.set_xy(50, 10)
                 pdf.set_font("Arial", 'B', 15)
                 pdf.set_text_color(95, 158, 160)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
-                  # Rojo claro
                 pdf.ln(15)
 
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"]
@@ -146,10 +139,8 @@ if uploaded_file:
 
         zip_buffer.seek(0)
         st.download_button(
-            label="📥 Descargar ZIP con todos los PDFs",
+            label="📅 Descargar ZIP con todos los PDFs",
             data=zip_buffer,
             file_name="PDFs_empresas.zip",
             mime="application/zip"
         )
-
-
