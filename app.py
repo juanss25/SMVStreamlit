@@ -9,7 +9,25 @@ st.set_page_config(page_title="Generador de PDFs en ZIP por Empresa", layout="ce
 st.title("📄 Generador de PDFs agrupados por NCODIGOPJ y descargables en ZIP")
 
 uploaded_file = st.file_uploader("Sube el archivo Excel", type=["xlsx"])
+def calculate_row_height(pdf, col_widths, data, line_height=5):
+    max_lines = 0
+    pdf.set_font("Arial", '', 9)
+    for i, text in enumerate(data):
+        max_chars = int(col_widths[i] / 2.5)
+        words = text.split()
+        lines = []
+        current_line = ""
 
+        for word in words:
+            if len(current_line + " " + word) <= max_chars:
+                current_line += " " + word if current_line else word
+            else:
+                lines.append(current_line)
+                current_line = word
+        lines.append(current_line)
+        max_lines = max(max_lines, len(lines))
+
+    return max_lines * line_height
 def draw_row(pdf, col_widths, data, line_height=5):
     x_start = pdf.get_x()
     y_start = pdf.get_y()
@@ -37,6 +55,9 @@ def draw_row(pdf, col_widths, data, line_height=5):
         max_lines = max(max_lines, len(lines))
 
     row_height = max_lines * line_height
+    if pdf.get_y() + row_height > pdf.page_break_trigger:
+        pdf.add_page()
+        draw_header(pdf, col_widths, ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"], line_height)
 
     # 2. Dibujar cada celda y su contenido
     for i, lines in enumerate(text_lines):
@@ -62,7 +83,7 @@ def draw_header(pdf, col_widths, headers, line_height=5):
     y_start = pdf.get_y()
     row_height = 2 * line_height
 
-    pdf.set_fill_color(0, 100, 0)
+    
     pdf.set_text_color(0, 0, 0)
     pdf.set_font("Arial", 'B', 10)
     pdf.set_fill_color(46, 139, 87)
@@ -103,7 +124,7 @@ if uploaded_file:
                 pdf.ln(15)
 
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"]
-                col_widths = [50, 45, 46, 65, 35, 40]
+                col_widths = [50, 51, 44, 60, 35, 39]
 
                 draw_header(pdf, col_widths, headers, line_height=5)
                 pdf.set_font("Arial", '', 7)
