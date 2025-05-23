@@ -96,16 +96,17 @@ if uploaded_file:
 
                 # Título
                 pdf.set_xy(50, 10)
-                pdf.set_font("Arial", 'B', 16)
+                pdf.set_font("Arial", 'B', 15)
+                pdf.set_text_color(95, 158, 160)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
-
+                pdf.set_fill_color(46, 139, 87)  # Rojo claro
                 pdf.ln(15)
 
-                headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "FECHA VENC CERTIFICADO"]
-                col_widths = [60, 60, 50, 70, 35, 40]
+                headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"]
+                col_widths = [50, 40, 50, 70, 35, 40]
 
                 draw_header(pdf, col_widths, headers, line_height=5)
-                pdf.set_font("Arial", '', 9)
+                pdf.set_font("Arial", '', 7)
 
                 for _, row in grupo.iterrows():
                     values = [
