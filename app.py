@@ -65,7 +65,7 @@ def draw_header(pdf, col_widths, headers, line_height=5):
     pdf.set_fill_color(0, 100, 0)
     pdf.set_text_color(0, 0, 0)
     pdf.set_font("Arial", 'B', 10)
-
+    pdf.set_fill_color(46, 139, 87)
     for i, header in enumerate(headers):
         x = pdf.get_x()
         y = pdf.get_y()
@@ -99,11 +99,11 @@ if uploaded_file:
                 pdf.set_font("Arial", 'B', 15)
                 pdf.set_text_color(95, 158, 160)
                 pdf.cell(0, 10, f"{empresa}", ln=True, align="C")
-                pdf.set_fill_color(46, 139, 87)  # Rojo claro
+                  # Rojo claro
                 pdf.ln(15)
 
                 headers = ["APELLIDOS Y NOMBRES", "EMAIL", "PERFIL", "CARGOS", "FECHA INICIAL", "F. V. CERTIFICADO"]
-                col_widths = [50, 40, 50, 70, 35, 40]
+                col_widths = [50, 45, 46, 65, 35, 40]
 
                 draw_header(pdf, col_widths, headers, line_height=5)
                 pdf.set_font("Arial", '', 7)
